@@ -1,4 +1,4 @@
-<?php include_once './productCode.php' ?>
+<?php ini_set('display_errors', 1); include_once './productCode.php' ?>
 <!DOCTYPE html><!--  This site was created in Webflow. http://www.webflow.com  -->
 <!--  Last Published: Thu Oct 28 2021 19:22:18 GMT+0000 (Coordinated Universal Time)  -->
 <html data-wf-page="617af26c6a0a5b5af06a66f6" data-wf-site="6128d6673b5738440887baa4">
@@ -31,7 +31,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
             <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
           </svg>
-          <span class='badge badge-warning' id='lblCartCount'> <?php if(isset($_SESSION['product_id'])) {echo count($_SESSION['product_id']);}else{echo 0;} ?> </span>
+          <span class='badge badge-warning' id='lblCartCount'> <?php if(isset($_SESSION['products'])) {echo count($_SESSION['products']);}else{echo 0;} ?> </span>
         </a>
       </nav>
       <div class="menu-button w-nav-button">
@@ -82,12 +82,16 @@
       <h1 class="heading-15"><?=$data['name'] ?></h1>
       <p class="paragraph-12"><?=$data['description'] ?></p>
       <div class="variationn">
-        <?php $j = 0; $p=0; foreach(JSON_decode($data['price']) as $i => $i_value) {  ?>
-        <div onClick="ab(this,<?=$i_value->price; ?>)" class="varition _<?php $j = $j + 1; if($j !== 1)echo $j; ?>">
+        <?php $j = 0; $pric=0;$vari=0; $p=0; foreach(JSON_decode($data['price']) as $i => $i_value) {  ?>
+        <div onClick="ab(this,<?=$i_value->price; ?>,'<?=$i_value->type ?>')" class="varition _<?php $j = $j + 1; if($j !== 1)echo $j; if($j == 1){$pric=$i_value->price;;$vari=$i_value->type;} ?>">
            <h3 class="heading-16 _<?php if($j == 1)$p=$i_value->price; if($j !== 1)echo $j; ?>"><?=$i_value->type ?></h3> 
         </div>
          <?php } ?> 
       </div>
+      <input type="hidden" name="name" id="name" value="<?=$data['name'] ?>" />
+      <input type="hidden" name="price" id="price" value="<?=$pric?>" />
+      <input type="hidden" name="variant" id="variant" value="<?=$vari?>" />
+
       <h3 class="heading-14 weizen" data-price="<?=$p ?>"><?=$p ?> € <span class="text-span-3">inkl. Mwst</span></h3>
       <p class="paragraph-11">( 57,13€ / Liter)</p>
       <a href="javascript:;"onClick="re()" class="shop-buy w-button">Kaufen</a>
@@ -136,7 +140,7 @@
   <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=6128d6673b5738440887baa4" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
   <script src="js/webflow.js" type="text/javascript"></script>
   <script>
-    function ab(e,p){
+    function ab(e,p,type){
       let x = document.querySelectorAll("._");
       x.forEach((element) => {
         console.log(element)
@@ -150,18 +154,28 @@
       var a = document.getElementsByClassName('heading-14')[0];
       a.innerHTML = p+' € <span class=\"text-span-3\">inkl. Mwst</span>'
       a.setAttribute('data-price', p);
+      document.getElementById('price').value=p
+      document.getElementById('variant').value=type
+
     }
     function re(){
       var a = document.getElementsByClassName('heading-14')[0].getAttribute('data-price');
-      window.location.href = 'product.php?p_id=<?=$_GET['p_id'] ?>&add=<?=true?>&price='+a
+      var price = document.getElementById('price').value;
+      var name = document.getElementById('name').value;
+      var variant = document.getElementById('variant').value;
+      window.location.href = 'product.php?p_id=<?=$_GET['p_id'] ?>&add=<?=true?>&price='+a+'&name='+name+'&variant='+variant
 
     }
     const params = new URLSearchParams(location.search)
     params.delete('add')
     params.delete('price')
+    params.delete('name')
+    params.delete('variant')
     var url = document.location.href;
     var urlparts = url.split('?');
     window.history.pushState('', '', urlparts[0]+"?"+params)
+
+    
   </script>
 </body>
 </html>

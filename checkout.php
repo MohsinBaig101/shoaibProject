@@ -1,38 +1,29 @@
 <?php
-require_once('vendor/autoload.php');
 ini_set('display_errors', 1);
+require_once('vendor/autoload.php');
+// ini_set('display_errors', 1);
 require_once ('./StripePayment.php');
 include_once('./config.php');
-$servername = $config["servername"];
-$username = $config["username"];
-$password = $config["password"];
-$dbname = $config["dbname"];
+// $servername = $config["servername"];
+// $username = $config["username"];
+// $password = $config["password"];
+// $dbname = $config["dbname"];
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-// Check connection
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+// // Create connection
+// $conn = new mysqli($servername, $username, $password, $dbname);
+// // Check connection
+// if ($conn->connect_error) {
+//   die("Connection failed: " . $conn->connect_error);
+// }
 session_start();
 // session_destroy();
-$p_ids = [];
-if(isset($_SESSION["product_id"])){
-  $p_ids = $_SESSION["product_id"];
-}
+ 
 $isExist = false;
-if(count($p_ids) > 0){
+if(isset($_SESSION["products"]) && count($_SESSION["products"]) > 0){
   $isExist = true;
-
-  $p_ids = implode(',',$p_ids);
-  // $p_ids = explode(',', $p_ids);
-  // print_r($p_ids);die();
-  $sql = "SELECT * FROM products where id in($p_ids)";
-  // print_r($sql);die();
-  $result = $conn->query($sql);
 }
+// print_r($_POST);
 if (!empty($_POST["token"])) {
-  // print_r($_POST);die();
   $stripePayment = new StripePayment();
   $stripeResponse = $stripePayment->chargeAmountFromCard($_POST);    
   $amount = $stripeResponse["amount"] /100;
@@ -51,7 +42,10 @@ if (!empty($_POST["token"])) {
   
   if ($stripeResponse['amount_refunded'] == 0 && empty($stripeResponse['failure_code']) && $stripeResponse['paid'] == 1 && $stripeResponse['captured'] == 1 && $stripeResponse['status'] == 'succeeded') {
       $successMessage = "Stripe payment is completed successfully. The TXN ID is " . $stripeResponse["balance_transaction"];
-  }
+      session_destroy();
+      header('Location: shop.php');
+    }
+
 }
 
 ?>
@@ -478,7 +472,7 @@ if (!empty($_POST["token"])) {
           </div>
           
            <input
-              type='hidden' name='currency_code' value='USD'> <input
+              type='hidden' name='currency_code' value='eur'> <input
               type='hidden' name='item_name' value='Test Product'>
           <input type='hidden' name='item_number'
               value='PHPPOTEG#1'>
@@ -779,15 +773,21 @@ if (!empty($_POST["token"])) {
                   </tr>
                 </thead>
                 <tbody>
-                <?php $i=0; $pr=0; if($isExist){ while($row = $result->fetch_assoc()) {$i = $i + 1;$pr = $pr + $_SESSION["'".$row['id']."'"];
+                 <?php $j=0; $pr=0; if($isExist){ 
+                    $data = $_SESSION['products'];
+                  // print_r($data);
+
+                    for($i=0; $i<count($data); $i++) {
+                        $j = $j + 1;
+                        $pr = $pr+(int)$data[$i]['price'];
                 ?>
                 <tr>
-                  <th scope="row"><?php echo $i; ?></th>
-                  <td><?=$row['name'] ?></td>
-                  <td><?=$_SESSION["'".$row['id']."'"];?></td>
-                  <td>1</td>
+                  <th scope="row"><?php echo $j; ?></th>
+                  <td><?=$data[$i]['name'] ?></td>
+                  <td><?=$data[$i]['price'];?></td>
+                  <td><?=$data[$i]['quantity'] ?></td>
                 </tr>
-                <?php }} ?> 
+                 <?php }} ?> 
                 </tbody>
               </table>
 

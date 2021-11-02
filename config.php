@@ -2,8 +2,8 @@
 $config = [
     'url' => getcwd(),
     'servername' => "localhost",
-    'username' => "root",
-    'password' => "",
+    'username' => "admin",
+    'password' => "Admin@4321",
     'dbname' => "dbs",
     'port'   => "3306"
 ];
