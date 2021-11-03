@@ -1,5 +1,7 @@
 {
     "require": {
-        "stripe/stripe-php": "^7.100"
+        "stripe/stripe-php": "^7.100",
+        "braintree/braintree_php" : "3.31.0",
+        "slim/slim": "^2.6"
     }
 }

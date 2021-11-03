@@ -399,7 +399,9 @@ if (!empty($_POST["token"])) {
               <script type="text/x-wf-template" id="wf-template-613280b9f4424d1c17c82312000000000042">%3Clabel%20class%3D%22w-commerce-commercecheckoutshippingmethoditem%22%3E%3Cinput%20type%3D%22radio%22%20required%3D%22%22%20name%3D%22shipping-method-choice%22%2F%3E%3Cdiv%20class%3D%22w-commerce-commercecheckoutshippingmethoddescriptionblock%22%3E%3Cdiv%20class%3D%22w-commerce-commerceboldtextblock%22%3E%3C%2Fdiv%3E%3Cdiv%3E%3C%2Fdiv%3E%3C%2Fdiv%3E%3Cdiv%3E%3C%2Fdiv%3E%3C%2Flabel%3E</script>
               <div data-node-type="commerce-checkout-shipping-methods-list" class="w-commerce-commercecheckoutshippingmethodslist" data-wf-collection="database.commerceOrder.availableShippingMethods" data-wf-template-id="wf-template-613280b9f4424d1c17c82312000000000042"><label class="w-commerce-commercecheckoutshippingmethoditem">
                 <input type="radio" id="html" checked name="fav_language" value="HTML">
-                <label for="html">Stripe</label><br>
+                <label for="html" style="margin-right : 10px;">Stripe</label>
+                <input type="radio" id="html" checked name="fav_language" value="HTML">
+                <label for="html">Paypal Braintree</label>
                   <div></div>
                 </label></div>
               
@@ -845,7 +847,9 @@ if (!empty($_POST["token"])) {
   <script src="js/webflow.js" type="text/javascript"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
-    <script>
+    <script src="https://js.braintreegateway.com/web/dropin/1.31.1/js/dropin.min.js"></script>
+
+   <script>
         function cardValidation () {
             var valid = true;
             var name = $('#name').val();
@@ -921,6 +925,8 @@ if (!empty($_POST["token"])) {
                 return false;
             }
         }
+
+        
     </script>
   </body>
 </html>
