@@ -4,6 +4,9 @@ require_once('vendor/autoload.php');
 // ini_set('display_errors', 1);
 require_once ('./StripePayment.php');
 include_once('./config.php');
+
+use \Braintree\Gateway;
+use \Braintree\Configuration;
 // $servername = $config["servername"];
 // $username = $config["username"];
 // $password = $config["password"];
@@ -46,6 +49,80 @@ if (!empty($_POST["token"])) {
       header('Location: shop.php');
     }
 
+}
+$configA = new \Braintree\Configuration([
+  'environment' => 'sandbox',
+  'merchantId' => $config["merchant_id"],
+  'publicKey' => $config["braintree_public_key"],
+  'privateKey' => $config["braintree_secret_key"]
+]);
+$gateway = new \Braintree\Gateway($configA);
+$as = $gateway->customer()->create([
+  // 'firstName' => 'Mike',
+  //   'lastName' => 'Jones',
+  //   'company' => 'Jones Co.',
+    'email' => 'mike.jones@example.com',
+    // 'phone' => '281.330.8004',
+    // 'fax' => '419.555.1235',
+    // 'website' => 'http://example.com'
+
+]);
+$clientToken = $gateway->clientToken()->generate([
+  "customerId" => $as->customer->id
+]);
+if(!isset($_SESSION['customer_id'])){
+  $_SESSION['customer_id'] = $as->customer->id;
+}
+if(!empty($_POST["nonce"])){
+ 
+
+  // Then, create a transaction:
+  $result = $gateway->transaction()->sale([
+      'amount' => $_POST['amount'],
+      'paymentMethodNonce' => $_POST['nonce'],
+      // 'deviceData' => $deviceDataFromTheClient,
+      'options' => [ 'submitForSettlement' => True ]
+  ]);
+  if ($result->success) {
+    $updateResult = $gateway->customer()->update(
+        $_SESSION['customer_id'],
+        [
+          'email' => $_POST['email'],
+        ]
+    );
+    $gateway->address()->create([
+      'customerId'        =>  $_SESSION['customer_id'],
+      'firstName'         => $_POST['shipping_name'],
+      'streetAddress'     => $_POST['shipping_address_line1'].' '.$_POST['shipping_address_line1'],
+      'locality'          => $_POST['shipping_address_city'],
+      'region'            => $_POST['shipping_address_state'],
+      'postalCode'        => $_POST['shipping_address_zip'],
+      // 'countryCodeAlpha2' => 'US'
+    ]);
+    $gateway->address()->create([
+      'customerId'        =>  $_SESSION['customer_id'],
+      'firstName'         => $_POST['billing_full_name'],
+      'streetAddress'     => $_POST['billing_address_line1'].' '.$_POST['billing_address_line2'],
+      'locality'          => $_POST['billing_address_city'],
+      'region'            => $_POST['billing_address_state'],
+      'postalCode'        => $_POST['billing_address_zip'],
+      'countryCodeAlpha2' => $_POST['billing_address_country']
+    ]);
+    session_destroy();
+    header('Location: shop.php');
+  } else if ($result->transaction) {
+      // session_destroy();
+      // header('Location: shop.php');
+      print_r("Error processing transaction:");
+      print_r("\n  code: " . $result->transaction->processorResponseCode);
+      print_r("\n  text: " . $result->transaction->processorResponseText);
+  } else {
+      // session_destroy();
+      // header('Location: shop.php');
+      foreach($result->errors->deepAll() AS $error) {
+        print_r($error->code . ": " . $error->message . "\n");
+      }
+  }
 }
 
 ?>
@@ -398,9 +475,9 @@ if (!empty($_POST["token"])) {
             <fieldset>
               <script type="text/x-wf-template" id="wf-template-613280b9f4424d1c17c82312000000000042">%3Clabel%20class%3D%22w-commerce-commercecheckoutshippingmethoditem%22%3E%3Cinput%20type%3D%22radio%22%20required%3D%22%22%20name%3D%22shipping-method-choice%22%2F%3E%3Cdiv%20class%3D%22w-commerce-commercecheckoutshippingmethoddescriptionblock%22%3E%3Cdiv%20class%3D%22w-commerce-commerceboldtextblock%22%3E%3C%2Fdiv%3E%3Cdiv%3E%3C%2Fdiv%3E%3C%2Fdiv%3E%3Cdiv%3E%3C%2Fdiv%3E%3C%2Flabel%3E</script>
               <div data-node-type="commerce-checkout-shipping-methods-list" class="w-commerce-commercecheckoutshippingmethodslist" data-wf-collection="database.commerceOrder.availableShippingMethods" data-wf-template-id="wf-template-613280b9f4424d1c17c82312000000000042"><label class="w-commerce-commercecheckoutshippingmethoditem">
-                <input type="radio" id="html" checked name="fav_language" value="HTML">
+                <input type="radio" onClick="checkMethod('stripe')" id="html" checked name="fav_language" value="HTML">
                 <label for="html" style="margin-right : 10px;">Stripe</label>
-                <input type="radio" id="html" checked name="fav_language" value="HTML">
+                <input type="radio" onClick="checkMethod('braintree')" id="html" name="fav_language" value="HTML">
                 <label for="html">Paypal Braintree</label>
                   <div></div>
                 </label></div>
@@ -412,73 +489,75 @@ if (!empty($_POST["token"])) {
               <h4>Payment Info</h4>
               <div>* Required</div>
             </div>
-            <fieldset class="w-commerce-commercecheckoutblockcontent">
-            <?php if(!empty($successMessage)) { ?>
-          <div id="success-message"><?php echo $successMessage; ?></div>
-          <?php  } ?>
-          <div id="error-message"></div>
-            
-                  
+            <fieldset id="stripe" class=" w-commerce-commercecheckoutblockcontent">
+                <?php if(!empty($successMessage)) { ?>
+                <div id="success-message"><?php echo $successMessage; ?></div>
+                <?php  } ?>
+                <div id="error-message"></div>
               
-          <div class="field-row">
-              <label>Card Holder Name</label> <span
-                  id="card-holder-name-info" class="info"></span><br>
-              <input type="text" id="name" name="name"
-                  class="demoInputBox">
-          </div>
-          <div class="field-row">
-              <label>Email</label> <span id="email-info"
-                  class="info"></span><br> <input type="text"
-                  id="email" name="email" class="demoInputBox">
-          </div>
-          <div class="field-row">
-              <label>Card Number</label> <span
-                  id="card-number-info" class="info"></span><br> <input
-                  type="text" id="card-number" name="card-number"
-                  class="demoInputBox">
-          </div>
-          <div class="field-row">
-              <div class="contact-row column-right">
-                  <label>Expiry Month / Year</label> <span
-                      id="userEmail-info" class="info"></span><br>
-                  <select name="month" id="month"
-                      class="demoSelectBox">
-                      <option value="08">08</option>
-                      <option value="09">9</option>
-                      <option value="10">10</option>
-                      <option value="11">11</option>
-                      <option value="12">12</option>
-                  </select> <select name="year" id="year"
-                      class="demoSelectBox">
-                      <option value="18">2018</option>
-                      <option value="19">2019</option>
-                      <option value="20">2020</option>
-                      <option value="21">2021</option>
-                      <option value="22">2022</option>
-                      <option value="23">2023</option>
-                      <option value="24">2024</option>
-                      <option value="25">2025</option>
-                      <option value="26">2026</option>
-                      <option value="27">2027</option>
-                      <option value="28">2028</option>
-                      <option value="29">2029</option>
-                      <option value="30">2030</option>
-                  </select>
+              <div class="field-row">
+                  <label>Card Holder Name</label> <span
+                      id="card-holder-name-info" class="info"></span><br>
+                  <input type="text" id="name" name="name"
+                      class="demoInputBox">
               </div>
-              <div class="contact-row cvv-box">
-                  <label>CVC</label> <span id="cvv-info"
+              <div class="field-row">
+                  <label>Email</label> <span id="email-info"
                       class="info"></span><br> <input type="text"
-                      name="cvc" id="cvc"
-                      class="demoInputBox cvv-input">
+                      id="email" name="email" class="demoInputBox">
               </div>
-          </div>
-          
-           <input
-              type='hidden' name='currency_code' value='eur'> <input
-              type='hidden' name='item_name' value='Test Product'>
-          <input type='hidden' name='item_number'
-              value='PHPPOTEG#1'>
+              <div class="field-row">
+                  <label>Card Number</label> <span
+                      id="card-number-info" class="info"></span><br> <input
+                      type="text" id="card-number" name="card-number"
+                      class="demoInputBox">
+              </div>
+              <div class="field-row">
+                  <div class="contact-row column-right">
+                      <label>Expiry Month / Year</label> <span
+                          id="userEmail-info" class="info"></span><br>
+                      <select name="month" id="month"
+                          class="demoSelectBox">
+                          <option value="08">08</option>
+                          <option value="09">9</option>
+                          <option value="10">10</option>
+                          <option value="11">11</option>
+                          <option value="12">12</option>
+                      </select> <select name="year" id="year"
+                          class="demoSelectBox">
+                          <option value="18">2018</option>
+                          <option value="19">2019</option>
+                          <option value="20">2020</option>
+                          <option value="21">2021</option>
+                          <option value="22">2022</option>
+                          <option value="23">2023</option>
+                          <option value="24">2024</option>
+                          <option value="25">2025</option>
+                          <option value="26">2026</option>
+                          <option value="27">2027</option>
+                          <option value="28">2028</option>
+                          <option value="29">2029</option>
+                          <option value="30">2030</option>
+                      </select>
+                  </div>
+                  <div class="contact-row cvv-box">
+                      <label>CVC</label> <span id="cvv-info"
+                          class="info"></span><br> <input type="text"
+                          name="cvc" id="cvc"
+                          class="demoInputBox cvv-input">
+                  </div>
+              </div>
               
+              <input
+                  type='hidden' name='currency_code' value='eur'> <input
+                  type='hidden' name='item_name' value='Test Product'>
+              <input type='hidden' name='item_number'
+                  value='PHPPOTEG#1'>
+              
+            </fieldset>
+          <fieldset id="braintree" class=" w-commerce-commercecheckoutblockcontent" style="display:none;">
+            <div id="dropin-container"></div>
+            <input type='hidden' name='nonce' value='' id='nonce' />
           </fieldset>
           </div>
           <div class="w-commerce-commercecheckoutblockheader">
@@ -829,6 +908,10 @@ if (!empty($_POST["token"])) {
                   id="submit-btn" class="btnAction"
                   onClick="stripePay(event);">
 
+                  <input type="button" name="pay_now" value="Submit"
+                  id="submit-button" class="btnAction" style="display:none;"
+                  >
+
               <div id="loader">
                   <img alt="loader" src="LoaderIcon.gif">
               </div>
@@ -847,7 +930,8 @@ if (!empty($_POST["token"])) {
   <script src="js/webflow.js" type="text/javascript"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
-    <script src="https://js.braintreegateway.com/web/dropin/1.31.1/js/dropin.min.js"></script>
+    <script src="https://js.braintreegateway.com/web/dropin/1.32.0/js/dropin.js"></script>
+
 
    <script>
         function cardValidation () {
@@ -925,8 +1009,35 @@ if (!empty($_POST["token"])) {
                 return false;
             }
         }
+        function checkMethod(type){
+          if(type === 'stripe'){
+            document.getElementById("stripe").style.display = "block";
+            document.getElementById("braintree").style.display = "none";
+            document.getElementById("submit-button").style.display = "none";
+            document.getElementById("submit-btn").style.display = "block";
+          }
+          if(type === 'braintree'){
+            document.getElementById("braintree").style.display = "block";
+            document.getElementById("stripe").style.display = "none";
+            document.getElementById("submit-button").style.display = "block";
+            document.getElementById("submit-btn").style.display = "none";
+          }
+        }
+        // Braintree
 
-        
+        var button = document.querySelector('#submit-button');
+        braintree.dropin.create({
+          authorization: '<?=$clientToken;?>',
+          selector: '#dropin-container'
+        }, function (err, instance) {
+          button.addEventListener('click', function () {
+            instance.requestPaymentMethod(function (err, payload) {
+              document.getElementById("nonce").value = payload.nonce;
+            
+              $("#frmStripePayment").submit();
+            });
+          })
+        });
     </script>
   </body>
 </html>
