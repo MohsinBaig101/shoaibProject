@@ -43,51 +43,7 @@
     <div class="form-section-03 wf-section">
       <div class="form-03-outer-div">
         <div class="content-wrap-left">
-          <div class="section-title">Kontaktieren Sie uns!</div>
-          <h2 class="heading-2">Sie haben fragen an uns? Lassen Sie es uns wissen!</h2>
-          <p class="paragraph-5">Füllen Sie das Kontaktformular aus und wir melden uns so schnell wie möglich bei Ihnen!</p>
-          <div class="contact-method-wrap">
-            <a href="http://vezadigital.com/webflow-form" class="contact-method w-inline-block">
-              <div class="contact-icon"><img src="images/email.svg" loading="lazy" alt=""></div>
-              <p class="contact-text">office@rema-import.com</p>
-            </a>
-            <a href="#" class="contact-method w-inline-block">
-              <div class="contact-icon"><img src="images/call.svg" loading="lazy" alt=""></div>
-              <p class="contact-text">+1 (234) 567-8901</p>
-            </a>
-          </div>
-          <div class="contact-method-wrap">
-            <div class="contact-method no-link">
-              <div class="contact-icon"><img src="images/maps-and-flags.svg" loading="lazy" alt=""></div>
-              <p class="contact-text">100 University Avenue, Toronto, Ontario, Canada</p>
-            </div>
-          </div>
-        </div>
-        <div class="form-block-03 w-form">
-          <form id="email-form-2" name="email-form-2" data-name="Email Form 2">
-            <div class="_2-questions-wrap"><input type="text" class="text-field-inform w-input" maxlength="256" name="First-Name-2" data-name="First Name 2" placeholder="First Name" id="First-Name-2">
-              <div class="form-spacer"></div><input type="text" class="text-field-inform w-input" maxlength="256" name="Last-Name-2" data-name="Last Name 2" placeholder="Last Name" id="Last-Name-2">
-            </div>
-            <div class="form-spacer"></div>
-            <div class="_2-questions-wrap"><input type="email" class="text-field-inform w-input" maxlength="256" name="Email-2" data-name="Email 2" placeholder="Email" id="Email-2">
-              <div class="form-spacer"></div><input type="tel" class="text-field-inform w-input" maxlength="256" name="Phone-Number-2" data-name="Phone Number 2" placeholder="Phone Number" id="Phone-Number-2">
-            </div>
-            <div class="form-spacer"></div><select id="field-2" name="field-2" data-name="Field 2" class="text-field-inform w-select">
-              <option value="">Reason For Inquiry</option>
-              <option value="Media">Media</option>
-              <option value="Working With You">Working With You</option>
-              <option value="Other">Other</option>
-            </select>
-            <div class="form-spacer"></div><textarea placeholder="Message" maxlength="5000" id="Message-2" name="Message-2" data-name="Message 2" class="text-field-inform bigger w-input"></textarea>
-            <div class="form-spacer"></div><input type="submit" value="Submit" data-wait="Please wait..." class="button-4 in-form w-button">
-          </form>
-          <div class="w-form-done">
-            <div>Thank you! We will get back in touch with you within 48 hours.</div>
-          </div>
-          <div class="w-form-fail">
-            <div>Oops! Something went wrong while submitting the form.</div>
-          </div>
-        </div>
+        <div class="mapouter"><div class="gmap_canvas"><iframe width="800" height="500" id="gmap_canvas" src="https://maps.google.com/maps?q=Dalay%20Zigarren,%20F%C3%BCrstenstra%C3%9Fe,%20Saarbr%C3%BCcken,%20Germany&t=&z=17&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe><a href="https://123movies-to.org"></a><br><style>.mapouter{position:relative;text-align:right;height:500px;width:800px;}</style><a href="https://www.embedgooglemap.net">google map code embed</a><style>.gmap_canvas {overflow:hidden;background:none!important;height:500px;width:800px;}</style></div></div>
       </div>
     </div>
     <div class="faq-section-01 wf-section">
